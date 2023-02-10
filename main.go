@@ -5,11 +5,17 @@ package main
 import (
 	"context"
 	"dousheng/biz/dal"
+	"dousheng/biz/mw"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"time"
 )
+
+func Init() {
+	dal.Init()
+	mw.InitJwt()
+}
 
 // AccessLog 日志中间件
 func AccessLog() app.HandlerFunc {
@@ -25,9 +31,10 @@ func AccessLog() app.HandlerFunc {
 }
 
 func main() {
-	dal.Init()
+	Init()
 	h := server.Default()
 	h.Use(AccessLog())
+
 	register(h)
 	h.Spin()
 }

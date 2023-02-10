@@ -10,3 +10,8 @@ const (
 	VideoTableName = "video"
 	UserTableName  = "user"
 )
+
+// Jwt
+const (
+	SecretKey = "secret key"
+)
