@@ -7,8 +7,9 @@ const (
 
 // 数据库表名
 const (
-	VideoTableName = "video"
-	UserTableName  = "user"
+	VideoTableName    = "video"
+	UserTableName     = "user"
+	RelationTableName = "relation"
 )
 
 // Jwt
