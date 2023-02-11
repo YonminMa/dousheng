@@ -51,20 +51,19 @@ func InitJwt() {
 		// 用于设置登录时认证用户信息的函数（必要配置）
 		Authenticator: func(ctx context.Context, c *app.RequestContext) (interface{}, error) {
 			var loginStruct struct {
-				Account  string `form:"username" json:"username" query:"username" vd:"(len($) > 0 && len($) < 30); msg:'Illegal format'"`
+				Username string `form:"username" json:"username" query:"username" vd:"(len($) > 0 && len($) < 30); msg:'Illegal format'"`
 				Password string `form:"password" json:"password" query:"password" vd:"(len($) > 0 && len($) < 30); msg:'Illegal format'"`
 			}
 			if err := c.BindAndValidate(&loginStruct); err != nil {
 				return nil, err
 			}
-			users, err := mysql.CheckUser(loginStruct.Account, utils2.MD5(loginStruct.Password))
+			users, err := mysql.CheckUser(loginStruct.Username, utils2.MD5(loginStruct.Password))
 			if err != nil {
 				return nil, err
 			}
 			if len(users) == 0 {
 				return nil, errors.New("user already exists or wrong password")
 			}
-
 			return users[0], nil
 		},
 		// 用于设置检索身份的键，默认为 identity
