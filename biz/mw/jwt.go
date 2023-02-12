@@ -29,7 +29,7 @@ func InitJwt() {
 		// 用于设置签名密钥（必要配置）
 		Key: []byte(constants.SecretKey),
 		// 用于设置 token 过期时间，默认为一小时
-		Timeout: time.Hour,
+		Timeout: 24 * 30 * time.Hour,
 		// 用于设置最大 token 刷新时间，允许客户端在 TokenTime + MaxRefresh 内
 		// 刷新 token 的有效时间，追加一个 Timeout 的时长
 		MaxRefresh: time.Hour,
