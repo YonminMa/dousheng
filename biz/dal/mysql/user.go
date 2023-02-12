@@ -38,6 +38,16 @@ func QueryUserById(ctx context.Context, userId int64) ([]*UserRaw, error) {
 	return users, nil
 }
 
+// QueryUserByIds 根据 user_ids 获取用户信息
+func QueryUserByIds(ctx context.Context, userIds []*int64) ([]*UserRaw, error) {
+	var users []*UserRaw
+	err := DB.WithContext(ctx).Where("id in (?)", userIds).Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
 // UserRegister 注册用户
 func UserRegister(ctx context.Context, username string, password string) (int64, error) {
 	userRaw := UserRaw{
