@@ -97,21 +97,13 @@ func UserInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	// 获取 claims 中的 payloads
-	// 具体内容在 jwt mw 中进行设置
-	claims, err := mw.JwtMiddleware.GetClaimsFromJWT(ctx, c)
-	if err != nil {
-		return
-	}
-	username := claims[mw.IdentityKey]
-
-	// 查询访问用户
-	users2, err := mysql.QueryUserByName(ctx, username.(string))
+	var userId int64
+	err = GetIdFromJWT(ctx, c, &userId)
 	if err != nil {
 		return
 	}
 
-	isFollow := mysql.CheckIsFollow(ctx, string(users2[0].ID), string(req.GetUserID()))
+	isFollow := mysql.CheckIsFollow(ctx, userId, req.GetUserID())
 
 	resp := user.UserInfoResponse{
 		StatusCode: user.Code_Success,
@@ -126,4 +118,22 @@ func UserInfo(ctx context.Context, c *app.RequestContext) {
 	}
 
 	c.JSON(consts.StatusOK, resp)
+}
+
+func GetIdFromJWT(ctx context.Context, c *app.RequestContext, id *int64) error {
+	// 获取 claims 中的 payloads
+	// 具体内容在 jwt mw 中进行设置
+	claims, err := mw.JwtMiddleware.GetClaimsFromJWT(ctx, c)
+	if err != nil {
+		return err
+	}
+	username := claims[mw.IdentityKey]
+
+	// 查询访问用户
+	users, err := mysql.QueryUserByName(ctx, username.(string))
+	if err != nil {
+		return err
+	}
+	*id = int64(users[0].ID)
+	return nil
 }
