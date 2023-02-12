@@ -6,6 +6,7 @@ import (
 	"dousheng/pkg/constants"
 	utils2 "dousheng/pkg/utils"
 	"errors"
+	"gorm.io/gorm"
 	"net/http"
 	"time"
 
@@ -62,7 +63,7 @@ func InitJwt() {
 				return nil, err
 			}
 			if len(users) == 0 {
-				return nil, errors.New("user already exists or wrong password")
+				return nil, errors.New("user doesn't exist or wrong password")
 			}
 			return users[0], nil
 		},
@@ -72,14 +73,16 @@ func InitJwt() {
 		IdentityHandler: func(ctx context.Context, c *app.RequestContext) interface{} {
 			claims := jwt.ExtractClaims(ctx, c)
 			return &mysql.UserRaw{
-				Name: claims[IdentityKey].(string),
+				Model: gorm.Model{
+					ID: uint(claims[IdentityKey].(float64)),
+				},
 			}
 		},
 		// 用于设置登陆成功后为向 token 中添加自定义负载信息的函数
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*mysql.UserRaw); ok {
 				return jwt.MapClaims{
-					IdentityKey: v.Name,
+					IdentityKey: v.ID,
 				}
 			}
 			return jwt.MapClaims{}
@@ -92,8 +95,9 @@ func InitJwt() {
 		// 用于设置 jwt 验证流程失败的响应函数
 		Unauthorized: func(ctx context.Context, c *app.RequestContext, code int, message string) {
 			c.JSON(http.StatusOK, utils.H{
-				"code":    code,
-				"message": message,
+				"status_code":    code,
+				"status_message": message,
+				"token":          "",
 			})
 		},
 	})
