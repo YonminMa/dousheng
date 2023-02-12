@@ -8,7 +8,7 @@ create table `user` (
                         `follower_count` bigint(20) not null default 0 comment '被关注数',
                         `created_at` timestamp not null default current_timestamp comment '创建时间',
                         `updated_at` timestamp not null default current_timestamp on update current_timestamp comment '更新时间',
-                        `deleted_at` timestamp comment '删除时间',
+                        `deleted_at` timestamp null comment '删除时间',
                         PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -23,7 +23,7 @@ create table `video` (
                          `comment_count` bigint(20) not null comment '视频的评论总数',
                          `created_at` timestamp not null default current_timestamp comment '创建时间',
                          `updated_at` timestamp not null default current_timestamp on update current_timestamp comment '更新时间',
-                         `deleted_at` timestamp comment '删除时间',
+                         `deleted_at` timestamp null comment '删除时间',
                          PRIMARY KEY (`id`),
                          constraint fk_video_user
                              FOREIGN KEY(user_id) REFERENCES user(id)
@@ -36,7 +36,7 @@ create table `favorite` (
                             `video_id` bigint(20) not null comment '视频id',
                             `created_at` timestamp not null default current_timestamp comment '创建时间',
                             `updated_at` timestamp not null default current_timestamp on update current_timestamp comment '更新时间',
-                            `deleted_at` timestamp comment '删除时间',
+                            `deleted_at` timestamp null comment '删除时间',
                             PRIMARY KEY (`id`),
                             constraint fk_favorite_user
                                 foreign key (user_id) references user(id),
@@ -51,7 +51,7 @@ create table `comment` (
                            `contents` varchar(255) not null comment '用户评论',
                            `created_at` timestamp not null default current_timestamp comment '创建时间',
                            `updated_at` timestamp not null default current_timestamp on update current_timestamp comment '更新时间',
-                           `deleted_at` timestamp comment '删除时间',
+                           `deleted_at` timestamp null comment '删除时间',
                            PRIMARY KEY (`id`),
                            constraint fk_comment_user
                                foreign key (user_id) references user(id),
@@ -65,7 +65,7 @@ create table `relation` (
                             `to_user_id` bigint(20) not null comment '对方用户id',
                             `created_at` timestamp not null default current_timestamp comment '创建时间',
                             `updated_at` timestamp not null default current_timestamp on update current_timestamp comment '更新时间',
-                            `deleted_at` timestamp comment '删除时间',
+                            `deleted_at` timestamp null comment '删除时间',
                             PRIMARY KEY (`id`),
                             constraint fk_relation_user
                                 FOREIGN KEY(user_id) REFERENCES user(id)
