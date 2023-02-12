@@ -5,8 +5,8 @@ package relation
 import (
 	"context"
 	"dousheng/biz/dal/mysql"
-	"dousheng/biz/handler/user"
 	relation "dousheng/biz/model/relation"
+	"dousheng/biz/mw"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
@@ -22,11 +22,8 @@ func RelationAction(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	var userId int64
-	err = user.GetIdFromJWT(ctx, c, &userId)
-	if err != nil {
-		return
-	}
+	v, _ := c.Get(mw.IdentityKey)
+	userId := int64(v.(*mysql.UserRaw).ID)
 
 	resp := &relation.RelationActionResponse{
 		StatusCode: relation.Code_Success,
@@ -66,31 +63,18 @@ func FollowList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	var userId int64
-	err = user.GetIdFromJWT(ctx, c, &userId)
-	if err != nil {
-		return
-	}
+	v, _ := c.Get(mw.IdentityKey)
+	userId := int64(v.(*mysql.UserRaw).ID)
 
 	followIds, err := mysql.QueryFollowById(ctx, req.GetUserID())
 	if err != nil {
 		return
 	}
 
-	follows, err := mysql.QueryUserByIds(ctx, followIds)
+	var userList []*relation.User
+	err = QueryUserListByIds(ctx, userId, followIds, &userList)
 	if err != nil {
 		return
-	}
-
-	userList := make([]*relation.User, 0)
-	for _, follow := range follows {
-		userList = append(userList, &relation.User{
-			ID:            int64(follow.ID),
-			Name:          follow.Name,
-			FollowCount:   follow.FollowerCount,
-			FollowerCount: follow.FollowCount,
-			IsFollow:      mysql.CheckIsFollow(ctx, userId, int64(follow.ID)),
-		})
 	}
 
 	resp := relation.FollowListResponse{
@@ -113,31 +97,18 @@ func FollowerList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	var userId int64
-	err = user.GetIdFromJWT(ctx, c, &userId)
-	if err != nil {
-		return
-	}
+	v, _ := c.Get(mw.IdentityKey)
+	userId := int64(v.(*mysql.UserRaw).ID)
 
 	followerIds, err := mysql.QueryFollowerById(ctx, req.GetUserID())
 	if err != nil {
 		return
 	}
 
-	followers, err := mysql.QueryUserByIds(ctx, followerIds)
+	var userList []*relation.User
+	err = QueryUserListByIds(ctx, userId, followerIds, &userList)
 	if err != nil {
 		return
-	}
-
-	userList := make([]*relation.User, 0)
-	for _, follower := range followers {
-		userList = append(userList, &relation.User{
-			ID:            int64(follower.ID),
-			Name:          follower.Name,
-			FollowCount:   follower.FollowerCount,
-			FollowerCount: follower.FollowCount,
-			IsFollow:      mysql.CheckIsFollow(ctx, userId, int64(follower.ID)),
-		})
 	}
 
 	resp := relation.FollowerListResponse{
@@ -147,4 +118,22 @@ func FollowerList(ctx context.Context, c *app.RequestContext) {
 	}
 
 	c.JSON(consts.StatusOK, resp)
+}
+
+func QueryUserListByIds(ctx context.Context, userId int64, ids []*int64, userList *[]*relation.User) error {
+	users, err := mysql.QueryUserByIds(ctx, ids)
+	if err != nil {
+		return err
+	}
+
+	for _, u := range users {
+		*userList = append(*userList, &relation.User{
+			ID:            int64(u.ID),
+			Name:          u.Name,
+			FollowCount:   u.FollowerCount,
+			FollowerCount: u.FollowCount,
+			IsFollow:      mysql.CheckIsFollow(ctx, userId, int64(u.ID)),
+		})
+	}
+	return nil
 }

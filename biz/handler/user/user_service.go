@@ -8,6 +8,7 @@ import (
 	user "dousheng/biz/model/user"
 	"dousheng/biz/mw"
 	utils2 "dousheng/pkg/utils"
+	"fmt"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -16,6 +17,7 @@ import (
 // RegisterUser .
 // @router /douyin/user/register/ [POST]
 func RegisterUser(ctx context.Context, c *app.RequestContext) {
+	fmt.Println("调用 register user 接口")
 	var err error
 	var req user.UserRegisterRequest
 	err = c.BindAndValidate(&req)
@@ -54,6 +56,7 @@ func RegisterUser(ctx context.Context, c *app.RequestContext) {
 // LoginUser .
 // @router /douyin/user/login/ [POST]
 func LoginUser(ctx context.Context, c *app.RequestContext) {
+	fmt.Println("调用 loginuser 接口")
 	var err error
 	var req user.UserLoginRequest
 	err = c.BindAndValidate(&req)
@@ -63,6 +66,14 @@ func LoginUser(ctx context.Context, c *app.RequestContext) {
 	}
 
 	users, err := mysql.QueryUserByName(ctx, req.GetUsername())
+	// 用户不存在则报错
+	if len(users) == 0 {
+		c.JSON(consts.StatusOK, utils.H{
+			"status_code":    consts.StatusBadRequest,
+			"status_message": "user doesn't exist",
+		})
+		return
+	}
 	c.Set("user_id", users[0].ID)
 	// LoginHandler 中包含判断用户名或者密码错误的逻辑
 	mw.JwtMiddleware.LoginHandler(ctx, c)
@@ -71,6 +82,7 @@ func LoginUser(ctx context.Context, c *app.RequestContext) {
 // UserInfo .
 // @router /douyin/user/ [GET]
 func UserInfo(ctx context.Context, c *app.RequestContext) {
+	fmt.Println("调用 userinfo 接口")
 	var err error
 	var req user.UserInfoRequest
 	err = c.BindAndValidate(&req)
@@ -92,16 +104,13 @@ func UserInfo(ctx context.Context, c *app.RequestContext) {
 	if len(users) == 0 {
 		c.JSON(consts.StatusOK, utils.H{
 			"status_code":    consts.StatusBadRequest,
-			"status_message": "user doesn't exists",
+			"status_message": "user doesn't exist",
 		})
 		return
 	}
 
-	var userId int64
-	err = GetIdFromJWT(ctx, c, &userId)
-	if err != nil {
-		return
-	}
+	v, _ := c.Get(mw.IdentityKey)
+	userId := int64(v.(*mysql.UserRaw).ID)
 
 	isFollow := mysql.CheckIsFollow(ctx, userId, req.GetUserID())
 
@@ -118,22 +127,4 @@ func UserInfo(ctx context.Context, c *app.RequestContext) {
 	}
 
 	c.JSON(consts.StatusOK, resp)
-}
-
-func GetIdFromJWT(ctx context.Context, c *app.RequestContext, id *int64) error {
-	// 获取 claims 中的 payloads
-	// 具体内容在 jwt mw 中进行设置
-	claims, err := mw.JwtMiddleware.GetClaimsFromJWT(ctx, c)
-	if err != nil {
-		return err
-	}
-	username := claims[mw.IdentityKey]
-
-	// 查询访问用户
-	users, err := mysql.QueryUserByName(ctx, username.(string))
-	if err != nil {
-		return err
-	}
-	*id = int64(users[0].ID)
-	return nil
 }
