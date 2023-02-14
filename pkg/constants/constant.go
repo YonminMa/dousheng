@@ -10,6 +10,7 @@ const (
 	VideoTableName    = "video"
 	UserTableName     = "user"
 	RelationTableName = "relation"
+	FavoriteTableName = "favorite"
 )
 
 // Jwt

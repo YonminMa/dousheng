@@ -24,29 +24,29 @@ struct Video {
 	8: string title //视频标题
 }
 
-struct DouyinPublishActionRequest {
+struct PublishActionRequest {
     1: string token // 用户鉴权token
     2: byte data // 视频数据
     3: string title // 视频标题
 }
 
-struct DouyinPublishActionResponse {
-    1: i64 status_code // 状态码，0-成功，其他值-失败
+struct PublishActionResponse {
+    1: Code status_code // 状态码
     2: string status_msg // 返回状态描述
 }
 
-struct DouyinPublishListRequest {
+struct PublishListRequest {
     1: i64 user_id // 用户id
     2: string token // 用户鉴权token
 }
 
-struct DouyinPublishListResponse {
-    1: i64 status_code // 状态码，0-成功，其他值-失败
+struct PublishListResponse {
+    1: Code status_code // 状态码
     2: string status_msg // 返回状态描述
     3: list<Video> video_list // 用户发布的视频列表
 }
 
 service PublishService {
-    DouyinPublishActionResponse PublishAction(1: DouyinPublishActionRequest req)(api.post="/douyin/publish/action/")
-    DouyinPublishListResponse PublishList(1: DouyinPublishListRequest req)(api.get="/douyin/publish/list/")
+    PublishActionResponse PublishAction(1: PublishActionRequest req)(api.post="/douyin/publish/action/")
+    PublishListResponse PublishList(1: PublishListRequest req)(api.get="/douyin/publish/list/")
 }

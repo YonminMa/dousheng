@@ -8,6 +8,7 @@ require (
 	github.com/apache/thrift v0.0.0-00010101000000-000000000000
 	github.com/cloudwego/hertz v0.5.2
 	github.com/hertz-contrib/jwt v1.0.2
+	github.com/hertz-contrib/pprof v0.1.0
 	gorm.io/driver/mysql v1.3.3
 	gorm.io/gorm v1.24.0
 )
@@ -28,6 +29,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/nyaruka/phonenumbers v1.0.55 // indirect
+	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect
 	github.com/tidwall/gjson v1.14.3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect

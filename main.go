@@ -9,6 +9,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/hertz-contrib/pprof"
 	"time"
 )
 
@@ -34,6 +35,9 @@ func main() {
 	Init()
 	h := server.Default()
 	h.Use(AccessLog())
+	// 注册 pprof 中间件
+	// 缺省为 "debug/pprof"
+	pprof.Register(h, "pprof")
 
 	register(h)
 	h.Spin()
