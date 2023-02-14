@@ -87,8 +87,8 @@ func CheckIsFollow(ctx context.Context, userId, toUserId int64) bool {
 }
 
 // QueryFollowById 根据 user_id 查询该用户关注的用户 id
-func QueryFollowById(ctx context.Context, userId int64) ([]*int64, error) {
-	var follows []*int64
+func QueryFollowById(ctx context.Context, userId int64) ([]int64, error) {
+	var follows []int64
 	err := DB.WithContext(ctx).
 		Table(constants.RelationTableName).
 		Select("to_user_id").
@@ -101,8 +101,8 @@ func QueryFollowById(ctx context.Context, userId int64) ([]*int64, error) {
 }
 
 // QueryFollowerById 根据 to_user_id 查询该用户的粉丝 id
-func QueryFollowerById(ctx context.Context, toUserId int64) ([]*int64, error) {
-	var followers []*int64
+func QueryFollowerById(ctx context.Context, toUserId int64) ([]int64, error) {
+	var followers []int64
 	err := DB.WithContext(ctx).
 		Table(constants.RelationTableName).
 		Select("user_id").
@@ -112,4 +112,20 @@ func QueryFollowerById(ctx context.Context, toUserId int64) ([]*int64, error) {
 		return nil, err
 	}
 	return followers, nil
+}
+
+// QueryRelationByIds 根据当前用户id和目标用户id获取关注信息
+func QueryRelationByIds(ctx context.Context, currentId int64, userIds []int64) (map[int64]*RelationRaw, error) {
+	var relations []*RelationRaw
+	err := DB.WithContext(ctx).
+		Where("user_id = ? AND to_user_id IN ?", currentId, userIds).
+		Find(&relations).Error
+	if err != nil {
+		return nil, err
+	}
+	relationMap := make(map[int64]*RelationRaw)
+	for _, relation := range relations {
+		relationMap[relation.ToUserId] = relation
+	}
+	return relationMap, nil
 }

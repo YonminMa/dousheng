@@ -8,6 +8,7 @@ import (
 	relation "dousheng/biz/model/relation"
 	"dousheng/biz/mw"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
@@ -24,31 +25,71 @@ func RelationAction(ctx context.Context, c *app.RequestContext) {
 
 	v, _ := c.Get(mw.IdentityKey)
 	userId := int64(v.(*mysql.UserRaw).ID)
+	toUserId := req.GetToUserID()
 
+	toUsers, err := mysql.QueryUserById(ctx, toUserId)
+	if err != nil {
+		return
+	}
+	// 如果要关注的用户不存在则报错
+	if len(toUsers) == 0 {
+		c.JSON(consts.StatusOK, utils.H{
+			"status_code":    consts.StatusBadRequest,
+			"status_message": "User doesn't exist",
+		})
+		return
+	}
+	// 如果要关注的人是自己则报错
+	if userId == toUserId {
+		c.JSON(consts.StatusOK, utils.H{
+			"status_code":    consts.StatusBadRequest,
+			"status_message": "You can't follow yourself",
+		})
+		return
+	}
+
+	if req.GetActionType() == 1 {
+		// 如果已经关注了则报错
+		if mysql.CheckIsFollow(ctx, userId, toUserId) {
+			c.JSON(consts.StatusOK, utils.H{
+				"status_code":    consts.StatusBadRequest,
+				"status_message": "You have followed",
+			})
+			return
+		} else {
+			// 关注操作
+			err := mysql.CreateRelation(ctx, userId, toUserId)
+			if err != nil {
+				return
+			}
+		}
+	} else if req.GetActionType() == 2 {
+		// 如果已经取消关注了则报错
+		if !mysql.CheckIsFollow(ctx, userId, toUserId) {
+			c.JSON(consts.StatusOK, utils.H{
+				"status_code":    consts.StatusBadRequest,
+				"status_message": "You have unfollowed",
+			})
+			return
+		} else {
+			// 取消关注操作
+			err := mysql.DeleteRelation(ctx, userId, toUserId)
+			if err != nil {
+				return
+			}
+		}
+	} else {
+		// 如果 action type 不为 1 或 2 则报错
+		c.JSON(consts.StatusOK, utils.H{
+			"status_code":    consts.StatusBadRequest,
+			"status_message": "Wrong action type",
+		})
+		return
+	}
 	resp := &relation.RelationActionResponse{
 		StatusCode: relation.Code_Success,
 		StatusMsg:  "Success",
 	}
-	if req.GetActionType() == 1 {
-		// 关注操作
-		err := mysql.CreateRelation(ctx, userId, req.GetToUserID())
-		if err != nil {
-			return
-		}
-	} else if req.GetActionType() == 2 {
-		// 取消关注操作
-		err := mysql.DeleteRelation(ctx, userId, req.GetToUserID())
-		if err != nil {
-			return
-		}
-	} else {
-		// 如果 action type 不为 1 或 2 则报错
-		resp = &relation.RelationActionResponse{
-			StatusCode: relation.Code_Error,
-			StatusMsg:  "Wrong action type",
-		}
-	}
-
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -60,6 +101,19 @@ func FollowList(ctx context.Context, c *app.RequestContext) {
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	users, err := mysql.QueryUserById(ctx, req.GetUserID())
+	if err != nil {
+		return
+	}
+	// 用户不存在则报错
+	if len(users) == 0 {
+		c.JSON(consts.StatusOK, utils.H{
+			"status_code":    consts.StatusBadRequest,
+			"status_message": "User doesn't exist",
+		})
 		return
 	}
 
@@ -97,6 +151,19 @@ func FollowerList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	users, err := mysql.QueryUserById(ctx, req.GetUserID())
+	if err != nil {
+		return
+	}
+	// 用户不存在则报错
+	if len(users) == 0 {
+		c.JSON(consts.StatusOK, utils.H{
+			"status_code":    consts.StatusBadRequest,
+			"status_message": "User doesn't exist",
+		})
+		return
+	}
+
 	v, _ := c.Get(mw.IdentityKey)
 	userId := int64(v.(*mysql.UserRaw).ID)
 
@@ -120,19 +187,32 @@ func FollowerList(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, resp)
 }
 
-func QueryUserListByIds(ctx context.Context, userId int64, ids []*int64, userList *[]*relation.User) error {
+func QueryUserListByIds(ctx context.Context, userId int64, ids []int64, userList *[]*relation.User) error {
 	users, err := mysql.QueryUserByIds(ctx, ids)
 	if err != nil {
 		return err
 	}
 
+	var relationMap map[int64]*mysql.RelationRaw
+	relationMap, err = mysql.QueryRelationByIds(ctx, userId, ids)
+	if err != nil {
+		return err
+	}
+
+	isFollow := false
 	for _, u := range users {
+		_, ok := relationMap[int64(u.ID)]
+		if ok {
+			isFollow = true
+		} else {
+			isFollow = false
+		}
 		*userList = append(*userList, &relation.User{
 			ID:            int64(u.ID),
 			Name:          u.Name,
 			FollowCount:   u.FollowerCount,
 			FollowerCount: u.FollowCount,
-			IsFollow:      mysql.CheckIsFollow(ctx, userId, int64(u.ID)),
+			IsFollow:      isFollow,
 		})
 	}
 	return nil
