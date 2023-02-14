@@ -3,6 +3,7 @@ package mw
 import (
 	"context"
 	"dousheng/biz/dal/mysql"
+	"dousheng/biz/model/user"
 	"dousheng/pkg/constants"
 	utils2 "dousheng/pkg/utils"
 	"errors"
@@ -42,7 +43,7 @@ func InitJwt() {
 		LoginResponse: func(ctx context.Context, c *app.RequestContext, code int, token string, expire time.Time) {
 			userId, _ := c.Get("user_id")
 			c.JSON(http.StatusOK, utils.H{
-				"status_code":    code,
+				"status_code":    user.Code_Success,
 				"status_message": "success",
 				"user_id":        userId,
 				"token":          token,
