@@ -39,7 +39,7 @@ func QueryUserById(ctx context.Context, userId int64) ([]*UserRaw, error) {
 }
 
 // QueryUserByIds 根据 user_ids 获取用户信息
-func QueryUserByIds(ctx context.Context, userIds []*int64) ([]*UserRaw, error) {
+func QueryUserByIds(ctx context.Context, userIds []int64) ([]*UserRaw, error) {
 	var users []*UserRaw
 	err := DB.WithContext(ctx).Where("id in (?)", userIds).Find(&users).Error
 	if err != nil {

@@ -3,6 +3,7 @@ package mysql
 import (
 	"context"
 	"dousheng/pkg/constants"
+	"fmt"
 	"gorm.io/gorm"
 	"log"
 	"time"
@@ -24,11 +25,18 @@ func (VideoRaw VideoRaw) TableName() string {
 	return constants.VideoTableName
 }
 
-// QueryVideoByLatestTime query video info by latest create Time
-func QueryVideoByLatestTime(ctx context.Context, latestTime int64) ([]*VideoRaw, error) {
+// QueryVideoByLatestTime 通过 latest update time 查询视频
+// 剔除 user_id 为当前用户 id 的视频
+func QueryVideoByLatestTime(ctx context.Context, latestTime, userId int64) ([]*VideoRaw, error) {
 	var videos []*VideoRaw
-	time := time.UnixMilli(latestTime)
-	err := DB.WithContext(ctx).Limit(30).Order("update_time desc").Where("update_time < ?", time).Find(&videos).Error
+	fmt.Println(time.Unix(latestTime, 0).UTC())
+	t := time.Unix(latestTime, 0).UTC()
+	err := DB.WithContext(ctx).
+		Limit(30).
+		Order("updated_at desc").
+		Where("updated_at < ?", t).
+		Where("user_id != ?", userId).
+		Find(&videos).Error
 	if err != nil {
 		return videos, err
 	}

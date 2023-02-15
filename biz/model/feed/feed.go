@@ -841,25 +841,43 @@ func (p *Video) String() string {
 }
 
 type FeedRequest struct {
-	LatestTime int64  `thrift:"latest_time,1" form:"latest_time" json:"latest_time" query:"latest_time"`
-	Token      string `thrift:"token,2" form:"token" json:"token" query:"token"`
+	LatestTime *int64  `thrift:"latest_time,1,optional" form:"latest_time" json:"latest_time,omitempty" query:"latest_time"`
+	Token      *string `thrift:"token,2,optional" form:"token" json:"token,omitempty" query:"token"`
 }
 
 func NewFeedRequest() *FeedRequest {
 	return &FeedRequest{}
 }
 
+var FeedRequest_LatestTime_DEFAULT int64
+
 func (p *FeedRequest) GetLatestTime() (v int64) {
-	return p.LatestTime
+	if !p.IsSetLatestTime() {
+		return FeedRequest_LatestTime_DEFAULT
+	}
+	return *p.LatestTime
 }
 
+var FeedRequest_Token_DEFAULT string
+
 func (p *FeedRequest) GetToken() (v string) {
-	return p.Token
+	if !p.IsSetToken() {
+		return FeedRequest_Token_DEFAULT
+	}
+	return *p.Token
 }
 
 var fieldIDToName_FeedRequest = map[int16]string{
 	1: "latest_time",
 	2: "token",
+}
+
+func (p *FeedRequest) IsSetLatestTime() bool {
+	return p.LatestTime != nil
+}
+
+func (p *FeedRequest) IsSetToken() bool {
+	return p.Token != nil
 }
 
 func (p *FeedRequest) Read(iprot thrift.TProtocol) (err error) {
@@ -935,7 +953,7 @@ func (p *FeedRequest) ReadField1(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
-		p.LatestTime = v
+		p.LatestTime = &v
 	}
 	return nil
 }
@@ -944,7 +962,7 @@ func (p *FeedRequest) ReadField2(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
-		p.Token = v
+		p.Token = &v
 	}
 	return nil
 }
@@ -983,14 +1001,16 @@ WriteStructEndError:
 }
 
 func (p *FeedRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("latest_time", thrift.I64, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.LatestTime); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
+	if p.IsSetLatestTime() {
+		if err = oprot.WriteFieldBegin("latest_time", thrift.I64, 1); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI64(*p.LatestTime); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
 	}
 	return nil
 WriteFieldBeginError:
@@ -1000,14 +1020,16 @@ WriteFieldEndError:
 }
 
 func (p *FeedRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("token", thrift.STRING, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Token); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
+	if p.IsSetToken() {
+		if err = oprot.WriteFieldBegin("token", thrift.STRING, 2); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Token); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
 	}
 	return nil
 WriteFieldBeginError:
