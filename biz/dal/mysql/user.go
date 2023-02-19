@@ -8,10 +8,16 @@ import (
 
 type UserRaw struct {
 	gorm.Model
-	Name          string
-	Password      string
-	FollowCount   int64
-	FollowerCount int64
+	Name            string
+	Password        string
+	FollowCount     int64
+	FollowerCount   int64
+	Avatar          string
+	BackgroundImage string
+	Signature       string
+	TotalFavorited  int64
+	WorkCount       int64
+	FavoriteCount   int64
 }
 
 func (UserRaw) TableName() string {

@@ -114,15 +114,23 @@ func UserInfo(ctx context.Context, c *app.RequestContext) {
 
 	isFollow := mysql.CheckIsFollow(ctx, userId, req.GetUserID())
 
+	u := users[0]
+
 	resp := user.UserInfoResponse{
 		StatusCode: user.Code_Success,
 		StatusMsg:  "Success",
 		User: &user.User{
-			ID:            int64(users[0].ID),
-			Name:          users[0].Name,
-			FollowCount:   users[0].FollowCount,
-			FollowerCount: users[0].FollowerCount,
-			IsFollow:      isFollow,
+			ID:              int64(u.ID),
+			Name:            u.Name,
+			FollowCount:     u.FollowCount,
+			FollowerCount:   u.FollowerCount,
+			IsFollow:        isFollow,
+			Avatar:          u.Avatar,
+			BackgroundImage: u.BackgroundImage,
+			Signature:       u.Signature,
+			TotalFavorited:  u.TotalFavorited,
+			WorkCount:       u.WorkCount,
+			FavoriteCount:   u.FavoriteCount,
 		},
 	}
 
