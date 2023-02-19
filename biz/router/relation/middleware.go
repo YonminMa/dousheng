@@ -64,3 +64,18 @@ func _followerlistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _friendMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _list1Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _friendlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

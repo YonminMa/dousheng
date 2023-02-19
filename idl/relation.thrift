@@ -46,8 +46,20 @@ struct FollowerListResponse {
     3: list<User> user_list //用户信息列表
 }
 
+struct FriendListRequest {
+    1: i64 user_id //用户id
+    2: string token //用户鉴权token
+}
+
+struct FriendListResponse {
+    1: Code status_code // 状态码
+    2: string status_msg // 状态描述
+    3: list<User> user_list //用户信息列表
+}
+
 service RelationService {
     RelationActionResponse RelationAction(1: RelationActionRequest req)(api.post="/douyin/relation/action/")
     FollowListResponse FollowList(1: FollowListRequest req)(api.get="/douyin/relation/follow/list/")
     FollowerListResponse FollowerList(1: FollowerListRequest req)(api.get="/douyin/relation/follower/list/")
+    FriendListResponse FriendList(1: FriendListRequest req)(api.get="/douyin/relation/friend/list/")
 }

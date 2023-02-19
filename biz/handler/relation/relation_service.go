@@ -187,6 +187,70 @@ func FollowerList(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, resp)
 }
 
+// FriendList .
+// @router /douyin/relation/friend/list/ [GET]
+func FriendList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req relation.FriendListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	users, err := mysql.QueryUserById(ctx, req.GetUserID())
+	if err != nil {
+		return
+	}
+	// 用户不存在则报错
+	if len(users) == 0 {
+		c.JSON(consts.StatusOK, utils.H{
+			"status_code":    consts.StatusBadRequest,
+			"status_message": "User doesn't exist",
+		})
+		return
+	}
+
+	v, _ := c.Get(mw.IdentityKey)
+	userId := int64(v.(*mysql.UserRaw).ID)
+
+	followerIds, err := mysql.QueryFollowerById(ctx, req.GetUserID())
+	if err != nil {
+		return
+	}
+
+	followIds, err := mysql.QueryFollowById(ctx, req.GetUserID())
+	if err != nil {
+		return
+	}
+
+	// 求 followerIds 和 followIds 的交集
+	m := make(map[int64]bool)
+	for _, followerId := range followerIds {
+		m[followerId] = true
+	}
+	var friendIds []int64
+	for _, followId := range followIds {
+		if m[followId] {
+			friendIds = append(friendIds, followId)
+		}
+	}
+
+	var userList []*relation.User
+	err = QueryUserListByIds(ctx, userId, friendIds, &userList)
+	if err != nil {
+		return
+	}
+
+	resp := relation.FollowerListResponse{
+		StatusCode: relation.Code_Success,
+		StatusMsg:  "Success",
+		UserList:   userList,
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
 func QueryUserListByIds(ctx context.Context, userId int64, ids []int64, userList *[]*relation.User) error {
 	users, err := mysql.QueryUserByIds(ctx, ids)
 	if err != nil {
