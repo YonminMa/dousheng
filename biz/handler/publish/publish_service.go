@@ -57,11 +57,17 @@ func PublishList(ctx context.Context, c *app.RequestContext) {
 
 	u := authors[0]
 	author := &publish.User{
-		ID:            int64(u.ID),
-		Name:          u.Name,
-		FollowCount:   u.FollowerCount,
-		FollowerCount: u.FollowCount,
-		IsFollow:      mysql.CheckIsFollow(ctx, userId, int64(u.ID)),
+		ID:              int64(u.ID),
+		Name:            u.Name,
+		FollowCount:     u.FollowerCount,
+		FollowerCount:   u.FollowCount,
+		IsFollow:        mysql.CheckIsFollow(ctx, userId, int64(u.ID)),
+		Avatar:          u.Avatar,
+		BackgroundImage: u.BackgroundImage,
+		Signature:       u.Signature,
+		TotalFavorited:  u.TotalFavorited,
+		WorkCount:       u.WorkCount,
+		FavoriteCount:   u.FavoriteCount,
 	}
 
 	videoRaws, err := mysql.QueryVideoByUserId(ctx, req.GetUserID())
