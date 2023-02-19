@@ -272,11 +272,17 @@ func QueryUserListByIds(ctx context.Context, userId int64, ids []int64, userList
 			isFollow = false
 		}
 		*userList = append(*userList, &relation.User{
-			ID:            int64(u.ID),
-			Name:          u.Name,
-			FollowCount:   u.FollowerCount,
-			FollowerCount: u.FollowCount,
-			IsFollow:      isFollow,
+			ID:              int64(u.ID),
+			Name:            u.Name,
+			FollowCount:     u.FollowerCount,
+			FollowerCount:   u.FollowCount,
+			IsFollow:        isFollow,
+			Avatar:          u.Avatar,
+			BackgroundImage: u.BackgroundImage,
+			Signature:       u.Signature,
+			TotalFavorited:  u.TotalFavorited,
+			WorkCount:       u.WorkCount,
+			FavoriteCount:   u.FavoriteCount,
 		})
 	}
 	return nil
