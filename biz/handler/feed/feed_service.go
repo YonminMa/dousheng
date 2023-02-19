@@ -129,11 +129,17 @@ func Feed(ctx context.Context, c *app.RequestContext) {
 		videoList = append(videoList, &feed.Video{
 			ID: int64(videoRaw.ID),
 			Author: &feed.User{
-				ID:            int64(videoUser.ID),
-				Name:          videoUser.Name,
-				FollowCount:   videoUser.FollowerCount,
-				FollowerCount: videoUser.FollowCount,
-				IsFollow:      isFollow,
+				ID:              int64(videoUser.ID),
+				Name:            videoUser.Name,
+				FollowCount:     videoUser.FollowerCount,
+				FollowerCount:   videoUser.FollowCount,
+				IsFollow:        isFollow,
+				Avatar:          videoUser.Avatar,
+				BackgroundImage: videoUser.BackgroundImage,
+				Signature:       videoUser.Signature,
+				TotalFavorited:  videoUser.TotalFavorited,
+				WorkCount:       videoUser.WorkCount,
+				FavoriteCount:   videoUser.FavoriteCount,
 			},
 			PlayURL:       videoRaw.PlayUrl,
 			CoverURL:      videoRaw.CoverUrl,
@@ -147,7 +153,7 @@ func Feed(ctx context.Context, c *app.RequestContext) {
 	resp := feed.FeedResponse{
 		StatusCode: feed.Code_Success,
 		StatusMsg:  "Success",
-		NextTime:   time.Now().Unix(),
+		NextTime:   videoRaws[len(videoRaws)-1].CreatedAt.Unix(),
 		VideoList:  videoList,
 	}
 
