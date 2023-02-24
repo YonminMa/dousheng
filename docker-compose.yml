@@ -17,7 +17,9 @@ services:
 
   # dousheng
   dousheng:
-    build: dousheng
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
     container_name: dousheng
     restart: always
     ports:
