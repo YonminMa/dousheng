@@ -1,0 +1,28 @@
+version: "3.7"
+
+services:
+
+  # MySQL
+  mysql_gorm:
+    image: mysql:5.7
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: gorm
+    volumes:
+      - ./mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  # dousheng
+  dousheng:
+    build: dousheng
+    container_name: dousheng
+    restart: always
+    ports:
+      - "8888:8888"
+    depends_on:
+      - mysql_gorm
+    volumes:
+      - ./dousheng:/dousheng
